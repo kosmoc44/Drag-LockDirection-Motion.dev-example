@@ -1,6 +1,6 @@
 import React, {useRef, useState, useEffect, useCallback} from 'react';
 
-function easeInBounce(x: number): number {
+function easeOutElastic(x: number): number {
   const c4 = (2 * Math.PI) / 3;
 
   return x === 0
@@ -48,7 +48,7 @@ const Example = () => {
       let timeFraction = (time - startTime) / duration;
       if (timeFraction > 1) timeFraction = 1;
 
-      const bounce = easeInBounce(timeFraction);
+      const bounce = easeOutElastic(timeFraction);
       const multiplier = 1 - bounce;
 
       setOffset({
