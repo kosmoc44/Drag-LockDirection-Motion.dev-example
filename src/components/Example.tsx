@@ -19,21 +19,23 @@ const Example = () => {
   const lockedAxis = useRef<'x' | 'y' | null>(null);
   const [offset, setOffset] = useState({x: 0, y: 0});
   const [isDragging, setIsDragging] = useState(false);
-  const HEAVINESS = 3.4;
+  const HEAVINESS = 1;
 
   const getElasticDistance = (mouseDelta: number, limit: number) => {
     return limit * Math.tanh(mouseDelta / (limit * HEAVINESS));
   };
 
-  const handleMouseDown = (e: React.MouseEvent) => {
+  const handlePointerDown = (e: React.PointerEvent) => {
     e.preventDefault();
+
     setIsDragging(true);
+
     lockedAxis.current = null;
     dragStartPos.current = {x: e.clientX, y: e.clientY};
     if (animationRef.current) cancelAnimationFrame(animationRef.current);
   };
 
-  const handleMouseUp = useCallback(() => {
+  const handlePointerUp = useCallback(() => {
     if (!isDragging) return;
     setIsDragging(false);
     lockedAxis.current = null;
@@ -64,8 +66,10 @@ const Example = () => {
     animationRef.current = requestAnimationFrame(animate);
   }, [isDragging, offset]);
 
-  const handleMouseMove = useCallback((e: MouseEvent) => {
+  const handlePointerMove = useCallback((e: PointerEvent) => {
     if (!isDragging || !containerRef.current || !squareRef.current || !dragStartPos.current) return;
+
+    e.preventDefault();
 
     const parentRect = containerRef.current.getBoundingClientRect();
     const centerX = parentRect.left + parentRect.width / 2;
@@ -91,13 +95,11 @@ const Example = () => {
 
     let newX = 0;
     let newY = 0;
-
     if (lockedAxis.current === 'x') {
       newX = getElasticDistance(rawDx, maxDistX);
     } else if (lockedAxis.current === 'y') {
       newY = getElasticDistance(rawDy, maxDistY);
     }
-
     setOffset({x: newX, y: newY});
 
   }, [isDragging]);
@@ -107,23 +109,36 @@ const Example = () => {
       if (isDragging) {
         document.body.style.cursor = 'grabbing';
 
-        window.addEventListener('mousemove', handleMouseMove);
-        window.addEventListener('mouseup', handleMouseUp);
+        window.addEventListener('pointermove', handlePointerMove);
+        window.addEventListener('pointerup', handlePointerUp);
+        window.addEventListener('pointercancel', handlePointerUp)
       } else {
         document.body.style.cursor = '';
 
-        window.removeEventListener('mousemove', handleMouseMove);
-        window.removeEventListener('mouseup', handleMouseUp);
+        window.removeEventListener('pointermove', handlePointerMove);
+        window.removeEventListener('pointerup', handlePointerUp);
+        window.removeEventListener('pointercancel', handlePointerUp)
       }
     }
     return () => {
       document.body.style.cursor = '';
-      window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('mouseup', handleMouseUp);
+      window.removeEventListener('pointermove', handlePointerMove);
+      window.removeEventListener('pointerup', handlePointerUp);
+      window.removeEventListener('pointercancel', handlePointerUp);
     };
-  }, [isDragging, handleMouseMove, handleMouseUp]);
+  }, [isDragging, handlePointerMove, handlePointerUp]);
 
   return <main ref={containerRef} className={'main'}>
+    <div
+      ref={squareRef}
+      className={'square'}
+      onPointerDown={handlePointerDown}
+      style={{
+        cursor: isDragging ? 'grabbing' : 'grab',
+        willChange: 'transform',
+        transform: `translate(calc(-50% + ${offset.x}px), calc(-50% + ${offset.y}px))`
+      }}
+    />
     <div
       className={'dashed-x'}
       style={{opacity: isDragging && lockedAxis.current === 'x' ? 1 : 0.4}}
@@ -131,16 +146,6 @@ const Example = () => {
     <div
       className={'dashed-y'}
       style={{opacity: isDragging && lockedAxis.current === 'y' ? 1 : 0.4}}
-    />
-    <div
-      ref={squareRef}
-      className={'square'}
-      onMouseDown={handleMouseDown}
-      style={{
-        cursor: isDragging ? 'grabbing' : 'grab',
-        willChange: 'transform',
-        transform: `translate(calc(-50% + ${offset.x}px), calc(-50% + ${offset.y}px))`
-      }}
     />
   </main>
 };

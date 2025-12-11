@@ -41,6 +41,7 @@ main {
     left: 50%;
     width: 8%;
     height: 8%;
+    touch-action: none;
     position: absolute;
     border: 0.1rem solid #fff;
     transform: translate(-50%, -50%);
