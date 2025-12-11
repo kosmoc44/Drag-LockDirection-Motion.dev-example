@@ -24,7 +24,7 @@ main {
     width: 100%;
     transform: none;
     position: absolute;
-    border-top: 0.2rem dashed #fff;
+    border-top: 0.1rem dashed #fff;
   }
 
   .dashed-y {
@@ -33,7 +33,7 @@ main {
     rotate: 90deg;
     transform: none;
     position: absolute;
-    border-top: 0.2rem dashed #fff;
+    border-top: 0.1rem dashed #fff;
   }
 
   .square {
@@ -42,7 +42,7 @@ main {
     width: 8%;
     height: 8%;
     position: absolute;
-    border: 0.2rem solid #fff;
+    border: 0.1rem solid #fff;
     transform: translate(-50%, -50%);
   }
 }
